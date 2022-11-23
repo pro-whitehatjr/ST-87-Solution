@@ -106,7 +106,7 @@ export default class Profile extends Component {
           <View style={styles.screenContainer}>
             <View style={styles.profileImageContainer}>
               <Image
-                source={{ uri: this.state.profile_image }}
+                source={require("../assets/profile_img.png")}
                 style={styles.profileImage}
               ></Image>
               <Text
