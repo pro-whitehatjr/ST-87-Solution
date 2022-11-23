@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   Platform,
   StatusBar,
   Image,
@@ -12,9 +11,11 @@ import {
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { RFValue } from "react-native-responsive-fontsize";
-import AppLoading from "expo-app-loading";
+
 import * as Font from "expo-font";
-import firebase from "firebase";
+
+import * as SplashScreen from 'expo-splash-screen';
+SplashScreen.preventAutoHideAsync();
 
 let customFonts = {
   "Bubblegum-Sans": require("../assets/fonts/BubblegumSans-Regular.ttf")
@@ -24,8 +25,7 @@ export default class StoryCard extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      fontsLoaded: false,
-      light_theme: true
+      fontsLoaded: false
     };
   }
 
@@ -36,24 +36,11 @@ export default class StoryCard extends Component {
 
   componentDidMount() {
     this._loadFontsAsync();
-    this.fetchUser();
   }
 
-  fetchUser = () => {
-    let theme;
-    firebase
-      .database()
-      .ref("/users/" + firebase.auth().currentUser.uid)
-      .on("value", snapshot => {
-        theme = snapshot.val().current_theme;
-        this.setState({ light_theme: theme === "light" });
-      });
-  };
-
   render() {
-    if (!this.state.fontsLoaded) {
-      return <AppLoading />;
-    } else {
+    if (this.state.fontsLoaded) {
+      SplashScreen.hideAsync();
       return (
         <TouchableOpacity
           style={styles.container}
@@ -63,64 +50,27 @@ export default class StoryCard extends Component {
             })
           }
         >
-          <SafeAreaView style={styles.droidSafeArea} />
-          <View
-            style={
-              this.state.light_theme
-                ? styles.cardContainerLight
-                : styles.cardContainer
-            }
-          >
+          <View style={styles.cardContainer}>
             <Image
               source={require("../assets/story_image_1.png")}
               style={styles.storyImage}
             ></Image>
+
             <View style={styles.titleContainer}>
-              <Text
-                style={
-                  this.state.light_theme
-                    ? styles.storyTitleTextLight
-                    : styles.storyTitleText
-                }
-              >
+              <Text style={styles.storyTitleText}>
                 {this.props.story.title}
               </Text>
-              <Text
-                style={
-                  this.state.light_theme
-                    ? styles.storyAuthorTextLight
-                    : styles.storyAuthorText
-                }
-              >
+              <Text style={styles.storyAuthorText}>
                 {this.props.story.author}
               </Text>
-              <Text
-                style={
-                  this.state.light_theme
-                    ? styles.descriptionTextLight
-                    : styles.descriptionText
-                }
-              >
+              <Text style={styles.descriptionText}>
                 {this.props.story.description}
               </Text>
             </View>
-
             <View style={styles.actionContainer}>
               <View style={styles.likeButton}>
-                <Ionicons
-                  name={"heart"}
-                  size={RFValue(30)}
-                  color={this.state.light_theme ? "black" : "white"}
-                />
-                <Text
-                  style={
-                    this.state.light_theme
-                      ? styles.likeTextLight
-                      : styles.likeText
-                  }
-                >
-                  12k
-                </Text>
+                <Ionicons name={"heart"} size={RFValue(30)} color={"white"} />
+                <Text style={styles.likeText}>12k</Text>
               </View>
             </View>
           </View>
@@ -131,27 +81,13 @@ export default class StoryCard extends Component {
 }
 
 const styles = StyleSheet.create({
-  droidSafeArea: {
-    marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0
+  container: {
+    flex: 1
   },
   cardContainer: {
     margin: RFValue(13),
     backgroundColor: "#2f345d",
     borderRadius: RFValue(20)
-  },
-  cardContainerLight: {
-    margin: RFValue(13),
-
-    backgroundColor: "white",
-    borderRadius: RFValue(20),
-    shadowColor: "rgb(0, 0, 0)",
-    shadowOffset: {
-      width: 3,
-      height: 3
-    },
-    shadowOpacity: RFValue(0.5),
-    shadowRadius: RFValue(5),
-    elevation: RFValue(2)
   },
   storyImage: {
     resizeMode: "contain",
@@ -163,44 +99,21 @@ const styles = StyleSheet.create({
     paddingLeft: RFValue(20),
     justifyContent: "center"
   },
-  titleTextContainer: {
-    flex: 0.8
-  },
-  iconContainer: {
-    flex: 0.2
-  },
   storyTitleText: {
-    fontFamily: "Bubblegum-Sans",
     fontSize: RFValue(25),
+    fontFamily: "Bubblegum-Sans",
     color: "white"
-  },
-  storyTitleTextLight: {
-    fontFamily: "Bubblegum-Sans",
-    fontSize: RFValue(25),
-    color: "black"
   },
   storyAuthorText: {
-    fontFamily: "Bubblegum-Sans",
     fontSize: RFValue(18),
+    fontFamily: "Bubblegum-Sans",
     color: "white"
-  },
-  storyAuthorTextLight: {
-    fontFamily: "Bubblegum-Sans",
-    fontSize: RFValue(18),
-    color: "black"
-  },
-  descriptionContainer: {
-    marginTop: RFValue(5)
   },
   descriptionText: {
     fontFamily: "Bubblegum-Sans",
-    fontSize: RFValue(13),
-    color: "white"
-  },
-  descriptionTextLight: {
-    fontFamily: "Bubblegum-Sans",
-    fontSize: RFValue(13),
-    color: "black"
+    fontSize: 13,
+    color: "white",
+    paddingTop: RFValue(10)
   },
   actionContainer: {
     justifyContent: "center",
@@ -218,11 +131,6 @@ const styles = StyleSheet.create({
   },
   likeText: {
     color: "white",
-    fontFamily: "Bubblegum-Sans",
-    fontSize: RFValue(25),
-    marginLeft: RFValue(5)
-  },
-  likeTextLight: {
     fontFamily: "Bubblegum-Sans",
     fontSize: RFValue(25),
     marginLeft: RFValue(5)
